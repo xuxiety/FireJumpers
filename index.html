@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Jumpers - 3D Runner Game</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #ui-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            pointer-events: all;
+        }
+        .menu button {
+            background: #4CAF50;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        .menu button:hover {
+            background: #45a049;
+        }
+        #score {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-container">
+        <div id="score">Score: 0</div>
+        <div id="start-menu" class="menu">
+            <h1>Fire Jumpers</h1>
+            <button id="start-button">Fight Fire!</button>
+        </div>
+        <div id="game-over" class="menu" style="display: none;">
+            <h1>You got roasted!</h1>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button id="retry-button">Retry</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.157.0/three.min.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
