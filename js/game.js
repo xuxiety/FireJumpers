@@ -5,7 +5,7 @@ class Game {
         this.score = 0;
         this.isGameOver = false;
         this.isPlaying = false;
-        this.speed = 5; // Speed in pixels per frame
+        this.speed = 5.75; // Speed in pixels per frame (15% faster than original 5)
         this.jumpForce = 0;
         this.gravity = 0.4; // Reduced from 0.6 to make jumps feel better
         this.consecutiveJumps = 0;
@@ -17,6 +17,18 @@ class Game {
         this.speedMultiplier = 1.05; // 5% increase
         this.lastObstacleSpawn = 0;
         this.spawnCooldown = 2000; // Initial spawn cooldown in milliseconds
+        
+        // Fire spacing properties
+        this.baseSpacing = 3; // Base spacing in character widths
+        this.spacingMultiplier = 1.0; // Increases over time
+        this.lastSpacingIncrease = 0;
+        this.spacingIncreaseInterval = 60000; // 60 seconds
+        this.spacingIncreaseAmount = 0.1; // +10% every minute
+        this.lastObstacleSize = null; // Track the last obstacle size
+        this.consecutiveIdenticalGaps = 0; // Track identical gaps
+        this.missedLastJump = false; // Track if player missed last jump
+        this.perlinSeed = Math.random() * 10000; // Seed for Perlin noise
+        this.perlinIndex = 0; // Index for Perlin noise generation
 
         // Game objects
         this.player = document.getElementById('player');
@@ -57,10 +69,16 @@ class Game {
         this.score = 0;
         this.isGameOver = false;
         this.isPlaying = true;
-        this.speed = 5;
+        this.speed = 5.75; // 15% faster than original
         this.jumpForce = 0;
         this.consecutiveJumps = 0;
         this.lastSpeedIncrease = Date.now();
+        this.lastSpacingIncrease = Date.now();
+        this.spacingMultiplier = 1.0;
+        this.lastObstacleSize = null;
+        this.consecutiveIdenticalGaps = 0;
+        this.missedLastJump = false;
+        this.perlinIndex = 0;
 
         // Reset player position
         this.player.style.bottom = '25%';
@@ -198,10 +216,116 @@ class Game {
         this.lastBirdSpawn = currentTime;
     }
 
+    // Perlin noise implementation for natural randomness
+    perlinNoise(x) {
+        // Simple Perlin-like noise function
+        const x1 = Math.floor(x);
+        const x2 = x1 + 1;
+        const dx = x - x1;
+        
+        // Simple hash function
+        const hash = (n) => Math.sin(n * this.perlinSeed) * 10000 & 0xffff;
+        
+        // Get pseudo-random gradients
+        const grad1 = hash(x1) / 0xffff * 2 - 1;
+        const grad2 = hash(x2) / 0xffff * 2 - 1;
+        
+        // Interpolate
+        const smooth = dx * dx * (3 - 2 * dx); // Smoothstep
+        return grad1 * (1 - smooth) + grad2 * smooth;
+    }
+    
+    // Get a value from Perlin noise between min and max
+    getPerlinValue(min, max) {
+        const noise = this.perlinNoise(this.perlinIndex / 10);
+        this.perlinIndex += 0.5;
+        // Map from [-1,1] to [min,max]
+        return min + (noise + 1) / 2 * (max - min);
+    }
+    
+    // Determine fire size category and dimensions
+    getFireSize() {
+        // Prevent back-to-back large fires
+        if (this.lastObstacleSize === 'large') {
+            const sizeRoll = Math.random();
+            if (sizeRoll < 0.6) return 'small';
+            return 'medium';
+        }
+        
+        const sizeRoll = Math.random();
+        if (sizeRoll < 0.4) {
+            return 'small';
+        } else if (sizeRoll < 0.7) {
+            return 'medium';
+        } else {
+            return 'large';
+        }
+    }
+    
+    // Calculate spacing based on fire size and game progression
+    calculateSpacing(fireSize) {
+        // Base spacing ranges by fire size (in character widths)
+        let minSpacing, maxSpacing;
+        
+        switch (fireSize) {
+            case 'small':
+                minSpacing = 2;
+                maxSpacing = 3;
+                break;
+            case 'medium':
+                minSpacing = 3;
+                maxSpacing = 4;
+                break;
+            case 'large':
+                minSpacing = 4;
+                maxSpacing = 5;
+                break;
+            default:
+                minSpacing = 3;
+                maxSpacing = 4;
+        }
+        
+        // Apply spacing multiplier from progression
+        minSpacing *= this.spacingMultiplier;
+        maxSpacing *= this.spacingMultiplier;
+        
+        // Hard cap at 6 character widths
+        maxSpacing = Math.min(maxSpacing, 6);
+        
+        // Use Perlin noise for organic spacing
+        let spacing = this.getPerlinValue(minSpacing, maxSpacing);
+        
+        // Adaptive spacing algorithm
+        if (this.consecutiveIdenticalGaps >= 2) {
+            // Avoid boring patterns by forcing variation
+            spacing *= (0.85 + Math.random() * 0.3); // 85-115% of calculated spacing
+            this.consecutiveIdenticalGaps = 0;
+        }
+        
+        // Dynamic balancing - make it easier if player missed last jump
+        if (this.missedLastJump) {
+            spacing *= 0.9; // Reduce difficulty temporarily
+            this.missedLastJump = false;
+        }
+        
+        // Ensure minimum jump distance (1.5x character width)
+        const minJumpDistance = 1.5;
+        spacing = Math.max(spacing, minJumpDistance);
+        
+        // Convert character widths to percentage
+        // Assuming character width is roughly 60px and game container is 100vw
+        const charWidthInPercent = 6; // 60px is roughly 6% of viewport width
+        return spacing * charWidthInPercent;
+    }
+    
     spawnObstacle() {
         const currentTime = Date.now();
         if (currentTime - this.lastObstacleSpawn < this.spawnCooldown) return;
 
+        // Determine fire size
+        const fireSize = this.getFireSize();
+        this.lastObstacleSize = fireSize;
+        
         // Create obstacle container
         const obstacle = document.createElement('div');
         obstacle.className = 'obstacle';
@@ -210,14 +334,31 @@ class Game {
         const fire = document.createElement('div');
         fire.className = 'fire';
         
-        // Randomly determine if this is a giant fire (higher threat)
-        const isGiantFire = Math.random() < 0.3; // 30% chance of giant fire
+        // Set size based on fire size category
+        let isGiantFire = false;
+        let width, height;
+        
+        switch (fireSize) {
+            case 'small':
+                width = 30;
+                height = 60;
+                break;
+            case 'medium':
+                width = 40;
+                height = 80;
+                break;
+            case 'large':
+                width = 60;
+                height = 120;
+                isGiantFire = true;
+                break;
+        }
+        
+        obstacle.style.width = `${width}px`;
+        obstacle.style.height = `${height}px`;
         
         if (isGiantFire) {
             fire.classList.add('giant-fire');
-            // Make giant fires larger
-            obstacle.style.width = '60px';
-            obstacle.style.height = '120px';
             
             // Create spark container for giant fires
             const sparkContainer = document.createElement('div');
@@ -246,9 +387,12 @@ class Game {
         
         obstacle.appendChild(fire);
         
+        // Calculate spacing based on fire size and game progression
+        const spacing = this.calculateSpacing(fireSize);
+        
         // Position the obstacle off-screen at the far end of the path
-        // Using 105% to ensure it's completely off-screen
-        const posX = 105;
+        // Using 105% + spacing to ensure proper distance from previous obstacle
+        const posX = 105 + spacing;
         obstacle.style.left = `${posX}%`;
         
         // Add a scaling effect to make fire appear to grow as it approaches
@@ -263,6 +407,8 @@ class Game {
             passed: false,
             scale: initialScale,
             isGiantFire: isGiantFire,
+            fireSize: fireSize,
+            spacing: spacing,
             // Track when the obstacle becomes visible for reaction time calculation
             visibleTime: null
         };
@@ -271,8 +417,27 @@ class Game {
         this.gameContainer.appendChild(obstacle);
         this.lastObstacleSpawn = currentTime;
         
-        // Decrease spawn cooldown as game progresses
-        this.spawnCooldown = Math.max(500, this.spawnCooldown * 0.95);
+        // Check for identical gaps
+        if (this.obstacles.length >= 2) {
+            const lastObstacle = this.obstacles[this.obstacles.length - 2];
+            if (Math.abs(lastObstacle.spacing - spacing) < 0.5) {
+                this.consecutiveIdenticalGaps++;
+            } else {
+                this.consecutiveIdenticalGaps = 0;
+            }
+        }
+        
+        // Adjust spawn cooldown based on game progression
+        // We want to maintain a good rhythm of obstacles based on speed
+        this.spawnCooldown = Math.max(500, 2000 / (this.speed / 5));
+        
+        // Ensure spawn cooldown doesn't get too short at high speeds
+        this.spawnCooldown = Math.max(this.spawnCooldown, 500);
+        
+        // Log significant changes for debugging
+        if (Math.random() < 0.05) { // Only log occasionally to avoid console spam
+            console.log(`Current speed: ${this.speed.toFixed(2)}, Spacing multiplier: ${this.spacingMultiplier.toFixed(2)}`);
+        }
     }
 
     updateObstacles() {
