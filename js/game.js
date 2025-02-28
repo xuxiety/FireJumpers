@@ -334,29 +334,38 @@ class Game {
         const obstacle = document.createElement('div');
         obstacle.className = 'obstacle';
         
-        // Create fire effect
+        // Create fire emoji effect
         const fire = document.createElement('div');
         fire.className = 'fire';
+        fire.innerHTML = '🔥';
         
         // Set size based on fire size category
         let isGiantFire = false;
-        let width, height;
+        let width, height, fontSize;
         
         switch (fireSize) {
             case 'small':
                 width = 30;
                 height = 60;
+                fontSize = 48;
                 break;
             case 'medium':
                 width = 40;
                 height = 80;
+                fontSize = 64;
                 break;
             case 'large':
                 width = 60;
                 height = 120;
+                fontSize = 96;
                 isGiantFire = true;
                 break;
         }
+        
+        fire.style.fontSize = `${fontSize}px`;
+        fire.style.display = 'flex';
+        fire.style.alignItems = 'center';
+        fire.style.justifyContent = 'center';
         
         obstacle.style.width = `${width}px`;
         obstacle.style.height = `${height}px`;
