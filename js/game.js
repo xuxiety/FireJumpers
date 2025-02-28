@@ -326,10 +326,29 @@ class Game {
         const currentTime = Date.now();
         if (currentTime - this.lastObstacleSpawn < this.spawnCooldown) return;
 
-        // Determine fire size
+        // Enable clusters after 45 seconds
+        if (!this.clusterEnabled && currentTime - this.lastSpeedIncrease >= 45000) {
+            this.clusterEnabled = true;
+        }
+
+        // Check if we should spawn a cluster
+        const shouldSpawnCluster = this.clusterEnabled && 
+            this.clusterSpawnCount >= this.clusterCooldown &&
+            Math.random() < this.clusterSpawnChance &&
+            currentTime - this.lastClusterTime > 5000 && // Minimum 5s between clusters
+            (!this.lastObstacleSize || this.lastObstacleSize !== 'large') && // No clusters near large fires
+            currentTime > this.clusterPenaltyEndTime;
+
+        if (shouldSpawnCluster) {
+            this.spawnClusterFires();
+            return;
+        }
+
+        // Normal fire spawning logic
         const fireSize = this.getFireSize();
         this.lastObstacleSize = fireSize;
-        
+        this.clusterSpawnCount++;
+
         // Create obstacle container
         const obstacle = document.createElement('div');
         obstacle.className = 'obstacle';
