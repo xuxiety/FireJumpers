@@ -209,17 +209,62 @@ class Game {
         // Create fire effect
         const fire = document.createElement('div');
         fire.className = 'fire';
+        
+        // Randomly determine if this is a giant fire (higher threat)
+        const isGiantFire = Math.random() < 0.3; // 30% chance of giant fire
+        
+        if (isGiantFire) {
+            fire.classList.add('giant-fire');
+            // Make giant fires larger
+            obstacle.style.width = '60px';
+            obstacle.style.height = '120px';
+            
+            // Create spark container for giant fires
+            const sparkContainer = document.createElement('div');
+            sparkContainer.className = 'spark-container';
+            
+            // Add multiple sparks
+            for (let i = 0; i < 5; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+                // Randomize spark positions
+                spark.style.left = `${Math.random() * 100}%`;
+                spark.style.animationDelay = `${Math.random() * 2}s`;
+                sparkContainer.appendChild(spark);
+            }
+            
+            obstacle.appendChild(sparkContainer);
+        } else {
+            // Add glow effect to regular fires
+            fire.classList.add('glow-effect');
+            
+            // Create a pulsing glow when spawned
+            const glow = document.createElement('div');
+            glow.className = 'fire-glow';
+            obstacle.appendChild(glow);
+        }
+        
         obstacle.appendChild(fire);
         
-        // Position the obstacle
-        const posX = Math.random() * 40 + 30; // Random position on the path
+        // Position the obstacle off-screen at the far end of the path
+        // Using 105% to ensure it's completely off-screen
+        const posX = 105;
         obstacle.style.left = `${posX}%`;
+        
+        // Add a scaling effect to make fire appear to grow as it approaches
+        const initialScale = isGiantFire ? 1.0 : 0.8;
+        obstacle.style.transform = `scale(${initialScale})`;
+        obstacle.style.transition = 'transform 2s linear';
         
         // Store obstacle data
         const obstacleObj = {
             element: obstacle,
             posX: posX,
-            passed: false
+            passed: false,
+            scale: initialScale,
+            isGiantFire: isGiantFire,
+            // Track when the obstacle becomes visible for reaction time calculation
+            visibleTime: null
         };
         
         this.obstacles.push(obstacleObj);
@@ -234,9 +279,22 @@ class Game {
         for (let i = this.obstacles.length - 1; i >= 0; i--) {
             const obstacle = this.obstacles[i];
             
-            // Move obstacle
+            // Move obstacle at a steady pace
             obstacle.posX -= this.speed / 10;
             obstacle.element.style.left = `${obstacle.posX}%`;
+            
+            // Track when obstacle becomes visible on screen (around 90% mark)
+            if (obstacle.posX <= 90 && obstacle.visibleTime === null) {
+                obstacle.visibleTime = Date.now();
+            }
+            
+            // Gradually increase scale as the obstacle approaches the player
+            if (obstacle.posX < 90) {
+                // Scale from 0.8 to 1.2 as it approaches
+                const newScale = 0.8 + (90 - obstacle.posX) / 90 * 0.4;
+                obstacle.scale = newScale;
+                obstacle.element.style.transform = `scale(${newScale})`;
+            }
             
             // Check for collision with player
             if (this.checkCollision(obstacle)) {
@@ -249,6 +307,12 @@ class Game {
                 obstacle.passed = true;
                 this.score += 10;
                 this.scoreElement.textContent = `Score: ${this.score}`;
+                
+                // Calculate reaction time for analytics (could be used for difficulty adjustment)
+                if (obstacle.visibleTime) {
+                    const reactionTime = (Date.now() - obstacle.visibleTime) / 1000;
+                    console.log(`Reaction time: ${reactionTime.toFixed(2)} seconds`);
+                }
             }
             
             // Remove obstacles that are off-screen

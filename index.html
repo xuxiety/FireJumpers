@@ -112,7 +112,7 @@
             bottom: -30px;
             width: 12px;
             height: 30px;
-            background-color: #B5EAD7; /* Green pants */
+            background-color: #18A558; /* Green pants */
         }
         
         .player-leg.left {
@@ -164,6 +164,59 @@
             100% { opacity: 1; height: 90%; }
         }
         
+        /* Glow effect for regular fires */
+        .glow-effect {
+            box-shadow: 0 0 15px 5px rgba(255, 69, 0, 0.6);
+        }
+        
+        /* Pulsing glow animation */
+        .fire-glow {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 165, 0, 0.8) 0%, rgba(255, 69, 0, 0) 70%);
+            animation: pulse 2s ease-in-out infinite;
+            z-index: -1;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.5); opacity: 0.3; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+        
+        /* Giant fire styling */
+        .giant-fire {
+            background: linear-gradient(to top, #FF0000, #FF4500, #FF8C00);
+            box-shadow: 0 0 20px 8px rgba(255, 0, 0, 0.7);
+        }
+        
+        /* Spark container and sparks */
+        .spark-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 6;
+            pointer-events: none;
+        }
+        
+        .spark {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #FFFF00;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: spark 2s ease-out infinite;
+        }
+        
+        @keyframes spark {
+            0% { transform: translateY(0) translateX(0); opacity: 1; }
+            100% { transform: translateY(-50px) translateX(30px); opacity: 0; }
+        }
+        
         .cloud {
             position: absolute;
             background-color: white;
@@ -178,11 +231,12 @@
             font-size: 20px;
             color: #40E0D0;
             animation: fly 0.5s infinite alternate;
+            transform: scaleX(-1); /* Flip the bird to face right */
         }
         
         @keyframes fly {
-            0% { transform: translateY(0) rotateX(0); }
-            100% { transform: translateY(-5px) rotateX(10deg); }
+            0% { transform: translateY(0) rotateX(0) scaleX(-1); }
+            100% { transform: translateY(-5px) rotateX(10deg) scaleX(-1); }
         }
         
         /* Tree styling */
