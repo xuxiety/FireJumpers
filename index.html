@@ -231,8 +231,35 @@
             border-radius: 50%;
             opacity: 0.8;
             z-index: 0;
+            animation: cloud-bob-1 7000ms ease-in-out infinite;
+        }
+
+        .cloud:nth-child(2n) {
+            animation: cloud-bob-2 8000ms ease-in-out infinite;
+        }
+
+        .cloud:nth-child(3n) {
+            animation: cloud-bob-3 9000ms ease-in-out infinite;
         }
         
+        @keyframes cloud-bob-1 {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes cloud-bob-2 {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes cloud-bob-3 {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0); }
+        }
+
         /* Sun styling */
         .sun {
             position: absolute;
