@@ -5,18 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fire Jumpers - 2D Runner Game</title>
     <style>
+        /* Global Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
+        /* Main Game Environment Styles */
         body {
             font-family: Arial, sans-serif;
             overflow: hidden;
-            background-color: rgba(255, 174, 188, 0.25); /* Soft pink background with 25% opacity */
+            background-color: rgba(255, 174, 188, 0.25); /* Soft pink background for visual appeal */
         }
         
+        /* Game Container - Main Viewport */
         #game-container {
             position: relative;
             width: 100vw;
@@ -24,38 +27,41 @@
             overflow: hidden;
         }
         
+        /* Ground Layer - Base Environment */
         #ground {
             position: absolute;
             bottom: 0;
             width: 100%;
             height: 25%;
-            background-color: #B4F8C8; /* Grass color */
+            background-color: #B4F8C8; /* Natural grass color */
             z-index: 1;
         }
         
+        /* Path Layer - Running Track */
         #path {
             position: absolute;
-            bottom: 10%; /* Raised from bottom to show grass underneath */
+            bottom: 10%;
             left: 0;
-            width: 100%; /* Full width across the ground */
-            height: 15%; /* Reduced height to show grass underneath */
+            width: 100%;
+            height: 15%;
             background: repeating-linear-gradient(0deg, 
                 #FBE7C6, #FBE7C6 20px, 
-                #E5D0A7 20px, #E5D0A7 40px); /* Horizontal dirt texture */
+                #E5D0A7 20px, #E5D0A7 40px); /* Textured dirt path effect */
             z-index: 2;
         }
         
-        /* Add a solid grass strip behind the trees */
+        /* Grass strip behind trees for added depth */
         #grass-strip {
             position: absolute;
             bottom: 25%;
             left: 0;
             width: 100%;
             height: 5%;
-            background-color: #B4F8C8; /* Match the ground grass color */
+            background-color: #B4F8C8;
             z-index: 2;
         }
         
+        /* Player character container */
         #player {
             position: absolute;
             bottom: 25%;
@@ -66,12 +72,13 @@
             transition: bottom 0.1s linear;
         }
         
+        /* Player body components */
         .player-body {
             position: absolute;
             bottom: 0;
             width: 40px;
             height: 60px;
-            background-color: #FFFF00; /* Yellow shirt */
+            background-color: #FFFF00;
             border-radius: 10px 10px 0 0;
             left: 10px;
         }
@@ -81,17 +88,18 @@
             bottom: 60px;
             width: 30px;
             height: 30px;
-            background-color: #FAD6A5; /* Skin tone */
+            background-color: #FAD6A5;
             border-radius: 50%;
             left: 15px;
         }
         
+        /* Player hat with brim effect */
         .player-hat {
             position: absolute;
             bottom: 85px;
             width: 40px;
             height: 15px;
-            background-color: #FFFF00; /* Yellow hat */
+            background-color: #FFFF00;
             border-radius: 5px 5px 0 0;
             left: 10px;
         }
@@ -103,32 +111,29 @@
             left: -5px;
             width: 50px;
             height: 5px;
-            background-color: #FFFF00; /* Hat brim */
+            background-color: #FFFF00;
             border-radius: 2px;
         }
         
+        /* Player legs with positioning */
         .player-leg {
             position: absolute;
             bottom: -30px;
             width: 12px;
             height: 30px;
-            background-color: #18A558; /* Green pants */
+            background-color: #18A558;
         }
         
-        .player-leg.left {
-            left: 10px;
-        }
+        .player-leg.left { left: 10px; }
+        .player-leg.right { left: 28px; }
         
-        .player-leg.right {
-            left: 28px;
-        }
-        
+        /* Player arms with rotation */
         .player-arm {
             position: absolute;
             bottom: 30px;
             width: 10px;
             height: 40px;
-            background-color: #FFFF00; /* Yellow shirt */
+            background-color: #FFFF00;
         }
         
         .player-arm.left {
@@ -141,6 +146,7 @@
             transform: rotate(-20deg);
         }
         
+        /* Obstacle styling for fire hazards */
         .obstacle {
             position: absolute;
             bottom: 25%;
@@ -149,6 +155,7 @@
             z-index: 5;
         }
         
+        /* Fire effect with gradient and animation */
         .fire {
             position: absolute;
             bottom: 0;
@@ -159,6 +166,7 @@
             animation: flicker 0.3s infinite alternate;
         }
         
+        /* Fire flickering animation */
         @keyframes flicker {
             0% { opacity: 0.8; height: 100%; }
             100% { opacity: 1; height: 90%; }

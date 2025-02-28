@@ -1,36 +1,40 @@
-// Game class definition
+/*
+ * Game Class
+ * Main class that manages the core game mechanics, state, and interactions.
+ * Handles player movement, obstacle generation, collision detection, and scoring.
+ */
 class Game {
     constructor() {
-        // Game state
+        // Core game state variables
         this.score = 0;
         this.isGameOver = false;
         this.isPlaying = false;
-        this.speed = 5.75; // Speed in pixels per frame (15% faster than original 5)
-        this.jumpForce = 0;
-        this.gravity = 0.4; // Reduced from 0.6 to make jumps feel better
+        this.speed = 5.75;      // Base movement speed (pixels/frame)
+        this.jumpForce = 0;     // Current vertical force applied to player
+        this.gravity = 0.4;     // Downward force applied during jumps
         this.consecutiveJumps = 0;
-        this.maxJumps = 2; // Allow double jump
+        this.maxJumps = 2;      // Double jump capability
 
-        // Game balance properties
+        // Difficulty progression parameters
         this.lastSpeedIncrease = 0;
-        this.speedIncreaseInterval = 30000; // 30 seconds
-        this.speedMultiplier = 1.05; // 5% increase
+        this.speedIncreaseInterval = 30000;  // Speed up every 30 seconds
+        this.speedMultiplier = 1.05;         // 5% speed increase
         this.lastObstacleSpawn = 0;
-        this.spawnCooldown = 2000; // Initial spawn cooldown in milliseconds
+        this.spawnCooldown = 2000;           // Initial spawn delay
         
-        // Fire spacing properties
-        this.baseSpacing = 3; // Base spacing in character widths
-        this.spacingMultiplier = 1.0; // Increases over time
+        // Fire obstacle spacing configuration
+        this.baseSpacing = 3; // Base distance between fires in character widths
+        this.spacingMultiplier = 1.0; // Spacing increases over time
         this.lastSpacingIncrease = 0;
-        this.spacingIncreaseInterval = 60000; // 60 seconds
-        this.spacingIncreaseAmount = 0.1; // +10% every minute
-        this.lastObstacleSize = null; // Track the last obstacle size
-        this.consecutiveIdenticalGaps = 0; // Track identical gaps
-        this.missedLastJump = false; // Track if player missed last jump
-        this.perlinSeed = Math.random() * 10000; // Seed for Perlin noise
-        this.perlinIndex = 0; // Index for Perlin noise generation
+        this.spacingIncreaseInterval = 60000; // Spacing increases every minute
+        this.spacingIncreaseAmount = 0.1; // Spacing increases by 10% each time
+        this.lastObstacleSize = null; // Tracks previous obstacle size for variety
+        this.consecutiveIdenticalGaps = 0; // Prevents repetitive gap patterns
+        this.missedLastJump = false; // Used for dynamic difficulty adjustment
+        this.perlinSeed = Math.random() * 10000; // Seed for natural-looking randomness
+        this.perlinIndex = 0; // Current position in Perlin noise sequence
 
-        // Game objects
+        // Reference to game objects and elements
         this.player = document.getElementById('player');
         this.obstacles = [];
         this.clouds = [];
@@ -43,11 +47,11 @@ class Game {
         this.gameOverMenu = document.getElementById('game-over');
         this.finalScoreElement = document.getElementById('final-score');
 
-        // Event listeners
+        // Set up event listeners for player input
         window.addEventListener('keydown', (e) => this.onKeyDown(e));
         window.addEventListener('touchstart', () => this.jump());
 
-        // Button listeners
+        // Initialize button click handlers
         document.getElementById('start-button').addEventListener('click', () => {
             console.log('Start button clicked');
             this.startGame();
@@ -57,10 +61,10 @@ class Game {
             this.startGame();
         });
 
-        // Setup initial scene
+        // Initialize game environment
         this.setupClouds();
 
-        // Start animation loop
+        // Start the game loop
         this.animate();
     }
 
