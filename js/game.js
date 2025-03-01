@@ -96,6 +96,23 @@ class Game {
         this.lastObstacleSize = null;
         this.consecutiveIdenticalGaps = 0;
         this.missedLastJump = false;
+        
+        // Start grass animations
+        document.documentElement.style.setProperty('--grass-animation-state', 'running');
+        document.documentElement.style.setProperty('--grass-move-duration', '8s');
+        document.documentElement.style.setProperty('--grass-wave-duration', '2s');
+
+        // Start environmental animations
+        const trees = document.querySelectorAll('.tree');
+        const grasses = document.querySelectorAll('.tall-grass');
+        
+        trees.forEach(tree => {
+            tree.style.animationPlayState = 'running';
+        });
+        
+        grasses.forEach(grass => {
+            grass.style.animationPlayState = 'running';
+        });
 
         // Reset fire progression tracking
         this.smallFiresEncountered = 0;
@@ -117,6 +134,28 @@ class Game {
         this.scoreElement.textContent = 'Score: 0';
         this.startMenu.style.display = 'none';
         this.gameOverMenu.style.display = 'none';
+    }
+
+    gameOver() {
+        this.isPlaying = false;
+        this.isGameOver = true;
+        this.finalScoreElement.textContent = this.score;
+        this.gameOverMenu.style.display = 'block';
+        
+        // Pause grass animations
+        document.documentElement.style.setProperty('--grass-animation-state', 'paused');
+        
+        // Pause environmental animations
+        const trees = document.querySelectorAll('.tree');
+        const grasses = document.querySelectorAll('.tall-grass');
+        
+        trees.forEach(tree => {
+            tree.style.animationPlayState = 'paused';
+        });
+        
+        grasses.forEach(grass => {
+            grass.style.animationPlayState = 'paused';
+        });
     }
 
     setupClouds() {

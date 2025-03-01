@@ -319,6 +319,8 @@
             position: absolute;
             z-index: 3;
             pointer-events: none;
+            animation: move-environment 15s linear infinite;
+            animation-play-state: paused;
         }
         
         .tree-trunk {
@@ -352,6 +354,8 @@
             z-index: 3;
             overflow: hidden;
             pointer-events: none;
+            animation: move-environment 12s linear infinite;
+            animation-play-state: paused;
         }
         
         .grass-blade {
@@ -360,6 +364,8 @@
             width: 6px;
             background-color: #32CD32; /* Lime green */
             border-radius: 10px 10px 0 0;
+            animation: wave-grass var(--grass-wave-duration, 2s) ease-in-out infinite alternate;
+            animation-play-state: var(--grass-animation-state, paused);
         }
         
         .grass-blade:nth-child(1) {
@@ -378,6 +384,18 @@
             height: 20px;
             left: 14px;
             transform: rotate(-3deg);
+        }
+        
+        /* Environment movement animation */
+        @keyframes move-environment {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100vw); }
+        }
+        
+        /* Grass waving animation */
+        @keyframes wave-grass {
+            0% { transform: rotate(-5deg); }
+            100% { transform: rotate(5deg); }
         }
         
         #score {
