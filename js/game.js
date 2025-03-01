@@ -33,6 +33,12 @@ class Game {
         this.missedLastJump = false; // Used for dynamic difficulty adjustment
         this.perlinSeed = Math.random() * 10000; // Seed for natural-looking randomness
         this.perlinIndex = 0; // Current position in Perlin noise sequence
+        
+        // Fire progression tracking
+        this.smallFiresEncountered = 0;     // Count of small fires player has seen
+        this.mediumFiresJumped = 0;         // Count of medium fires player has jumped
+        this.smallFiresSinceNonSmall = 0;   // Count of small fires since last medium/large
+        this.gamePhase = 'initial';         // Current game phase (initial, ramp-up, full-challenge)
 
         // Cluster fire configuration
         this.clusterEnabled = false;
@@ -92,6 +98,12 @@ class Game {
         this.consecutiveIdenticalGaps = 0;
         this.missedLastJump = false;
         this.perlinIndex = 0;
+
+        // Reset fire progression tracking
+        this.smallFiresEncountered = 0;
+        this.mediumFiresJumped = 0;
+        this.smallFiresSinceNonSmall = 0;
+        this.gamePhase = 'initial';
 
         // Reset player position
         this.player.style.bottom = '25%';
@@ -260,19 +272,50 @@ class Game {
     
     // Determine fire size category and dimensions
     getFireSize() {
-        // Prevent back-to-back large fires
-        if (this.lastObstacleSize === 'large') {
-            const sizeRoll = Math.random();
-            if (sizeRoll < 0.6) return 'small';
-            return 'medium';
-        }
-        
-        const sizeRoll = Math.random();
-        if (sizeRoll < 0.4) {
+        // Initial Phase: Only small fires
+        if (this.smallFiresEncountered < 10) {
+            this.smallFiresEncountered++;
             return 'small';
-        } else if (sizeRoll < 0.7) {
+        }
+
+        // Ramp-Up Phase: Mix of small and medium fires (3:1 ratio)
+        if (this.mediumFiresJumped < 5) {
+            // Ensure at least 2 small fires between medium fires
+            if (this.smallFiresSinceNonSmall < 2) {
+                this.smallFiresSinceNonSmall++;
+                this.smallFiresEncountered++;
+                return 'small';
+            }
+
+            const sizeRoll = Math.random();
+            if (sizeRoll < 0.75) { // 75% chance for small fire
+                this.smallFiresSinceNonSmall++;
+                this.smallFiresEncountered++;
+                return 'small';
+            } else {
+                this.smallFiresSinceNonSmall = 0;
+                return 'medium';
+            }
+        }
+
+        // Full Challenge Phase: All fire sizes available
+        // Ensure minimum 2 small fires between large/medium
+        if (this.smallFiresSinceNonSmall < 2 && this.lastObstacleSize !== 'small') {
+            this.smallFiresSinceNonSmall++;
+            this.smallFiresEncountered++;
+            return 'small';
+        }
+
+        const sizeRoll = Math.random();
+        if (sizeRoll < 0.5) {
+            this.smallFiresSinceNonSmall++;
+            this.smallFiresEncountered++;
+            return 'small';
+        } else if (sizeRoll < 0.75) {
+            this.smallFiresSinceNonSmall = 0;
             return 'medium';
         } else {
+            this.smallFiresSinceNonSmall = 0;
             return 'large';
         }
     }
@@ -588,6 +631,11 @@ class Game {
                 obstacle.passed = true;
                 this.score += 10;
                 this.scoreElement.textContent = `Score: ${this.score}`;
+                
+                // Track medium fires jumped for progression
+                if (obstacle.fireSize === 'medium') {
+                    this.mediumFiresJumped++;
+                }
                 
                 // Calculate reaction time for analytics (could be used for difficulty adjustment)
                 if (obstacle.visibleTime) {
