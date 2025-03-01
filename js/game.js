@@ -830,9 +830,23 @@ class Game {
         
         // Allow jumping if on ground or if we haven't reached max jumps
         if (this.consecutiveJumps < this.maxJumps) {
-            // Stronger jump force for better obstacle clearing
-            this.jumpForce = 12;
+            // Base jump force - reduced to keep player visible
+            let jumpForce = 7.0;
+            
+            // Apply different force for double jump (slightly lower)
+            if (this.consecutiveJumps > 0) {
+                jumpForce = 5.5;
+            }
+            
+            this.jumpForce = jumpForce;
             this.consecutiveJumps++;
+            
+            // Add maximum height constraint
+            const playerBottom = parseFloat(this.player.style.bottom);
+            if (playerBottom > 60) {
+                // Significantly reduce jump force when already high
+                this.jumpForce = Math.min(this.jumpForce, 4);
+            }
         }
     }
 }
