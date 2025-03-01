@@ -477,9 +477,9 @@ class Game {
         
         switch (fireSize) {
             case 'small':
-                width = 30 * sizeVariation;
-                height = 60 * sizeVariation;
-                fontSize = 48 * sizeVariation;
+                width = 20 * sizeVariation;  // Reduced from 30
+                height = 40 * sizeVariation; // Reduced from 60
+                fontSize = 32 * sizeVariation; // Reduced from 48
                 break;
             case 'medium':
                 width = 40 * sizeVariation;
@@ -487,9 +487,9 @@ class Game {
                 fontSize = 64 * sizeVariation;
                 break;
             case 'large':
-                width = 60 * sizeVariation;
-                height = 120 * sizeVariation;
-                fontSize = 96 * sizeVariation;
+                width = 80 * sizeVariation;  // Increased from 60
+                height = 160 * sizeVariation; // Increased from 120
+                fontSize = 128 * sizeVariation; // Increased from 96
                 isGiantFire = true;
                 break;
         }
