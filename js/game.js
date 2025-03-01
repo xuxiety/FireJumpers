@@ -451,9 +451,10 @@ class Game {
         container.style.position = 'absolute';
         container.style.bottom = '25%';
         container.style.zIndex = '10';
+        container.style.width = 'auto'; // Allow container to expand based on content
         
-        // Fire sizes in order: small, medium, large
-        const fireSizes = ['small', 'medium', 'large'];
+        // Fire sizes in order: small, large, medium
+        const fireSizes = ['small', 'large', 'medium'];
         const fireElements = [];
         
         // Create each fire element in the bundle
@@ -462,13 +463,14 @@ class Game {
             fireContainer.className = 'fire-container';
             fireContainer.style.display = 'inline-block';
             fireContainer.style.position = 'relative';
-            fireContainer.style.marginRight = index < fireSizes.length - 1 ? '15px' : '0';
+            fireContainer.style.marginRight = index < fireSizes.length - 1 ? '30px' : '0'; // Increased spacing between fires
             
             const fire = this.createFireElement(size);
             fire.style.position = 'absolute';
             fire.style.bottom = '0';
-            fire.style.left = '50%';
-            fire.style.transform = 'translateX(-50%)';
+            fire.style.left = '0'; // Position fire at the left edge of its container
+            fire.style.right = '0'; // Stretch to right edge
+            fire.style.textAlign = 'center'; // Center the fire emoji
             
             // Set size based on fire type
             let width, height, fontSize;
