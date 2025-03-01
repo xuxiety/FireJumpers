@@ -272,7 +272,7 @@ class Game {
         }
 
         // Full Challenge Phase: All fire sizes available
-        // Ensure minimum 2 small fires between large/medium
+        // Ensure minimum 2 small fires between large/medium/extra-large
         if (this.smallFiresSinceNonSmall < 2 && this.lastObstacleSize !== 'small') {
             this.smallFiresSinceNonSmall++;
             this.smallFiresEncountered++;
@@ -280,16 +280,19 @@ class Game {
         }
 
         const sizeRoll = Math.random();
-        if (sizeRoll < 0.5) {
+        if (sizeRoll < 0.4) {
             this.smallFiresSinceNonSmall++;
             this.smallFiresEncountered++;
             return 'small';
-        } else if (sizeRoll < 0.75) {
+        } else if (sizeRoll < 0.65) {
             this.smallFiresSinceNonSmall = 0;
             return 'medium';
-        } else {
+        } else if (sizeRoll < 0.85) {
             this.smallFiresSinceNonSmall = 0;
             return 'large';
+        } else {
+            this.smallFiresSinceNonSmall = 0;
+            return 'extra-large';
         }
     }
     
@@ -434,6 +437,103 @@ class Game {
         this.spawnCooldown = Math.max(this.spawnCooldown, 2500);
     }
 
+    spawnExtraLargeFire() {
+        const currentTime = Date.now();
+        this.lastObstacleSpawn = currentTime;
+        
+        // Create a container for the extra-large fire bundle
+        const container = document.createElement('div');
+        container.className = 'obstacle extra-large-fire';
+        container.style.display = 'flex';
+        container.style.alignItems = 'flex-end';
+        container.style.justifyContent = 'center';
+        container.style.left = '105%';
+        container.style.position = 'absolute';
+        container.style.bottom = '25%';
+        container.style.zIndex = '10';
+        
+        // Fire sizes in order: small, medium, large
+        const fireSizes = ['small', 'medium', 'large'];
+        const fireElements = [];
+        
+        // Create each fire element in the bundle
+        fireSizes.forEach((size, index) => {
+            const fireContainer = document.createElement('div');
+            fireContainer.className = 'fire-container';
+            fireContainer.style.display = 'inline-block';
+            fireContainer.style.position = 'relative';
+            fireContainer.style.marginRight = index < fireSizes.length - 1 ? '15px' : '0';
+            
+            const fire = this.createFireElement(size);
+            fire.style.position = 'absolute';
+            fire.style.bottom = '0';
+            fire.style.left = '50%';
+            fire.style.transform = 'translateX(-50%)';
+            
+            // Set size based on fire type
+            let width, height, fontSize;
+            switch(size) {
+                case 'small':
+                    width = 30;
+                    height = 60;
+                    fontSize = 48;
+                    break;
+                case 'medium':
+                    width = 60;
+                    height = 120;
+                    fontSize = 96;
+                    break;
+                case 'large':
+                    width = 90;
+                    height = 180;
+                    fontSize = 144;
+                    fire.classList.add('giant-fire');
+                    break;
+            }
+            
+            fire.style.fontSize = `${fontSize}px`;
+            fireContainer.style.width = `${width}px`;
+            fireContainer.style.height = `${height}px`;
+            
+            // Add sparks to each fire
+            const sparkCount = size === 'large' ? 8 : (size === 'medium' ? 5 : 3);
+            this.createSparkEffects(fireContainer, sparkCount);
+            
+            // Add glow effect
+            const glow = document.createElement('div');
+            glow.className = 'fire-glow';
+            glow.style.width = '100%';
+            glow.style.height = '100%';
+            glow.style.position = 'absolute';
+            glow.style.bottom = '0';
+            fireContainer.appendChild(glow);
+            
+            fireContainer.appendChild(fire);
+            fireElements.push(fireContainer);
+            container.appendChild(fireContainer);
+        });
+        
+        // Calculate total width for collision detection
+        const totalWidth = 30 + 60 + 90 + 30; // small + medium + large + spacing
+        
+        // Add to obstacles array
+        const obstacleObj = {
+            element: container,
+            posX: 105,
+            passed: false,
+            scale: 1,
+            isExtraLarge: true,
+            width: totalWidth,
+            visibleTime: currentTime
+        };
+        
+        this.obstacles.push(obstacleObj);
+        this.gameContainer.appendChild(container);
+        
+        // Set longer cooldown after extra-large fire
+        this.spawnCooldown = 3000;
+    }
+
     spawnObstacle() {
         const currentTime = Date.now();
         if (currentTime - this.lastObstacleSpawn < this.spawnCooldown) return;
@@ -460,6 +560,12 @@ class Game {
         const fireSize = this.getFireSize();
         this.lastObstacleSize = fireSize;
         this.clusterSpawnCount++;
+
+        // Check if we should spawn an extra-large fire (bundled fires)
+        if (fireSize === 'extra-large') {
+            this.spawnExtraLargeFire();
+            return;
+        }
 
         // Create obstacle container
         const obstacle = document.createElement('div');
