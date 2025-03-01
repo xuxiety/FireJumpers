@@ -35,6 +35,7 @@ class Game {
         // Fire progression tracking
         this.smallFiresEncountered = 0;     // Count of small fires player has seen
         this.mediumFiresJumped = 0;         // Count of medium fires player has jumped
+        this.largeFiresJumped = 0;         // Count of large fires player has jumped
         this.smallFiresSinceNonSmall = 0;   // Count of small fires since last medium/large
         this.gamePhase = 'initial';         // Current game phase (initial, ramp-up, full-challenge)
 
@@ -99,6 +100,7 @@ class Game {
         // Reset fire progression tracking
         this.smallFiresEncountered = 0;
         this.mediumFiresJumped = 0;
+        this.largeFiresJumped = 0;
         this.smallFiresSinceNonSmall = 0;
         this.gamePhase = 'initial';
 
@@ -290,9 +292,12 @@ class Game {
         } else if (sizeRoll < 0.85) {
             this.smallFiresSinceNonSmall = 0;
             return 'large';
-        } else {
+        } else if (this.largeFiresJumped >= 5) {
             this.smallFiresSinceNonSmall = 0;
             return 'extra-large';
+        } else {
+            this.smallFiresSinceNonSmall = 0;
+            return 'large';
         }
     }
     
@@ -672,7 +677,6 @@ class Game {
         
         // Speed and spacing are now managed without debug logging
     }
-
     updateObstacles() {
         for (let i = this.obstacles.length - 1; i >= 0; i--) {
             const obstacle = this.obstacles[i];
@@ -706,9 +710,11 @@ class Game {
                 this.score += 10;
                 this.scoreElement.textContent = `Score: ${this.score}`;
                 
-                // Track medium fires jumped for progression
+                // Track medium and large fires jumped for progression
                 if (obstacle.fireSize === 'medium') {
                     this.mediumFiresJumped++;
+                } else if (obstacle.fireSize === 'large' || obstacle.isExtraLarge) {
+                    this.largeFiresJumped++;
                 }
                 
                 // Calculate reaction time for analytics (could be used for difficulty adjustment)
