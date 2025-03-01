@@ -369,16 +369,12 @@ class Game {
             spark.className = `spark${isWarning ? ' warning-spark' : ''}`;
             
             if (!isWarning) {
-                const sparkPosX = this.getRandomValue(0, 100);
-                const sparkSize = this.getRandomValue(4, 8);
-                const hue = this.getRandomValue(20, 40);
-                
-                spark.style.left = `${sparkPosX}%`;
-                spark.style.width = `${sparkSize}px`;
-                spark.style.height = `${sparkSize}px`;
+                spark.style.left = `${this.getRandomValue(0, 100)}%`;
+                spark.style.width = `${this.getRandomValue(4, 8)}px`;
+                spark.style.height = spark.style.width;
                 spark.style.animationDelay = `${this.getRandomValue(0, 2)}s`;
                 spark.style.animationDuration = `${this.getRandomValue(1.5, 2.5)}s`;
-                spark.style.backgroundColor = `hsl(${hue}, 100%, 60%)`;
+                spark.style.backgroundColor = `hsl(${this.getRandomValue(20, 40)}, 100%, 60%)`;
             }
             
             sparkContainer.appendChild(spark);
