@@ -34,6 +34,15 @@ class Game {
         this.perlinSeed = Math.random() * 10000; // Seed for natural-looking randomness
         this.perlinIndex = 0; // Current position in Perlin noise sequence
 
+        // Cluster fire configuration
+        this.clusterEnabled = false;
+        this.clusterSpawnCount = 0;
+        this.clusterCooldown = 5; // Number of regular fires before cluster is possible
+        this.clusterSpawnChance = 0.3; // 30% chance to spawn cluster when conditions met
+        this.lastClusterTime = 0;
+        this.clusterPenaltyEndTime = 0; // Time until next cluster is allowed after player hit
+        this.path = document.getElementById('path');
+
         // Reference to game objects and elements
         this.player = document.getElementById('player');
         this.obstacles = [];
@@ -220,31 +229,33 @@ class Game {
         this.lastBirdSpawn = currentTime;
     }
 
-    // Perlin noise implementation for natural randomness
+    // Enhanced Perlin noise implementation for natural randomness
     perlinNoise(x) {
-        // Simple Perlin-like noise function
         const x1 = Math.floor(x);
         const x2 = x1 + 1;
         const dx = x - x1;
         
-        // Simple hash function
-        const hash = (n) => Math.sin(n * this.perlinSeed) * 10000 & 0xffff;
+        // Improved hash function for better distribution
+        const hash = (n) => {
+            n = ((n << 13) ^ n) & 0xFFFFFFFF;
+            n = (n * (n * n * 15731 + 789221) + 1376312589) & 0xFFFFFFFF;
+            return (n / 0x7fffffff);
+        };
         
-        // Get pseudo-random gradients
-        const grad1 = hash(x1) / 0xffff * 2 - 1;
-        const grad2 = hash(x2) / 0xffff * 2 - 1;
+        // Get pseudo-random gradients with improved distribution
+        const grad1 = hash(x1 * this.perlinSeed);
+        const grad2 = hash(x2 * this.perlinSeed);
         
-        // Interpolate
-        const smooth = dx * dx * (3 - 2 * dx); // Smoothstep
+        // Improved smoothstep interpolation for smoother transitions
+        const smooth = dx * dx * dx * (dx * (dx * 6 - 15) + 10);
         return grad1 * (1 - smooth) + grad2 * smooth;
     }
     
-    // Get a value from Perlin noise between min and max
+    // Get a value from Perlin noise between min and max with improved scaling
     getPerlinValue(min, max) {
         const noise = this.perlinNoise(this.perlinIndex / 10);
-        this.perlinIndex += 0.5;
-        // Map from [-1,1] to [min,max]
-        return min + (noise + 1) / 2 * (max - min);
+        this.perlinIndex += 0.618033988749895; // Use golden ratio for better distribution
+        return min + (noise + 1) * 0.5 * (max - min);
     }
     
     // Determine fire size category and dimensions
@@ -321,7 +332,96 @@ class Game {
         const charWidthInPercent = 6; // 60px is roughly 6% of viewport width
         return spacing * charWidthInPercent;
     }
-    
+    // Create a fire element with common properties
+    createFireElement(size, isCluster = false) {
+        const fire = document.createElement('div');
+        fire.className = `fire${isCluster ? ' cluster-fire' : ''}`;
+        fire.innerHTML = '🔥';
+        fire.style.display = 'flex';
+        fire.style.alignItems = 'center';
+        fire.style.justifyContent = 'center';
+        return fire;
+    }
+
+    // Create spark effects for fire
+    createSparkEffects(container, count, isWarning = false) {
+        const sparkContainer = document.createElement('div');
+        sparkContainer.className = 'spark-container';
+        
+        for (let i = 0; i < count; i++) {
+            const spark = document.createElement('div');
+            spark.className = `spark${isWarning ? ' warning-spark' : ''}`;
+            
+            if (!isWarning) {
+                const sparkPosX = this.getPerlinValue(0, 100);
+                const sparkSize = this.getPerlinValue(4, 8);
+                const hue = this.getPerlinValue(20, 40);
+                
+                spark.style.left = `${sparkPosX}%`;
+                spark.style.width = `${sparkSize}px`;
+                spark.style.height = `${sparkSize}px`;
+                spark.style.animationDelay = `${this.getPerlinValue(0, 2)}s`;
+                spark.style.animationDuration = `${this.getPerlinValue(1.5, 2.5)}s`;
+                spark.style.backgroundColor = `hsl(${hue}, 100%, 60%)`;
+            }
+            
+            sparkContainer.appendChild(spark);
+        }
+        
+        container.appendChild(sparkContainer);
+    }
+
+    spawnClusterFires() {
+        const currentTime = Date.now();
+        this.lastClusterTime = currentTime;
+        this.clusterSpawnCount = 0;
+
+        const clusterSize = Math.random() < 0.5 ? 2 : 3;
+        let baseX = 105;
+
+        for (let i = 0; i < clusterSize; i++) {
+            const obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
+            
+            const fire = this.createFireElement('small', true);
+            const sizeVariation = this.getPerlinValue(0.8, 1.2);
+            const width = (25 + Math.random() * 10) * sizeVariation;
+            const height = width * 2;
+            const fontSize = width * 1.6;
+
+            fire.style.fontSize = `${fontSize}px`;
+            obstacle.style.width = `${width}px`;
+            obstacle.style.height = `${height}px`;
+
+            if (!this.clusterEnabled) {
+                this.createSparkEffects(obstacle, 3, true);
+                this.path.classList.add('path-warning');
+                setTimeout(() => this.path.classList.remove('path-warning'), 1500);
+            }
+
+            obstacle.appendChild(fire);
+
+            const noiseOffset = this.getPerlinValue(-10, 10);
+            const posX = baseX + (i * 15) + noiseOffset;
+            obstacle.style.left = `${posX}%`;
+
+            const obstacleObj = {
+                element: obstacle,
+                posX: posX,
+                passed: false,
+                scale: 0.8,
+                isCluster: true,
+                spacing: 15,
+                visibleTime: null
+            };
+
+            this.obstacles.push(obstacleObj);
+            this.gameContainer.appendChild(obstacle);
+        }
+
+        this.spawnCooldown = Math.max(this.spawnCooldown, 2500);
+    }
+
     spawnObstacle() {
         const currentTime = Date.now();
         if (currentTime - this.lastObstacleSpawn < this.spawnCooldown) return;
@@ -353,60 +453,44 @@ class Game {
         const obstacle = document.createElement('div');
         obstacle.className = 'obstacle';
         
-        // Create fire emoji effect
-        const fire = document.createElement('div');
-        fire.className = 'fire';
-        fire.innerHTML = '🔥';
+        // Create fire emoji effect using our helper method
+        const fire = this.createFireElement(fireSize);
         
-        // Set size based on fire size category
+        // Set size based on fire size category with Perlin noise variation
         let isGiantFire = false;
         let width, height, fontSize;
         
+        // Use Perlin noise to vary the size within each category
+        const sizeVariation = this.getPerlinValue(0.9, 1.1);
+        
         switch (fireSize) {
             case 'small':
-                width = 30;
-                height = 60;
-                fontSize = 48;
+                width = 30 * sizeVariation;
+                height = 60 * sizeVariation;
+                fontSize = 48 * sizeVariation;
                 break;
             case 'medium':
-                width = 40;
-                height = 80;
-                fontSize = 64;
+                width = 40 * sizeVariation;
+                height = 80 * sizeVariation;
+                fontSize = 64 * sizeVariation;
                 break;
             case 'large':
-                width = 60;
-                height = 120;
-                fontSize = 96;
+                width = 60 * sizeVariation;
+                height = 120 * sizeVariation;
+                fontSize = 96 * sizeVariation;
                 isGiantFire = true;
                 break;
         }
         
         fire.style.fontSize = `${fontSize}px`;
-        fire.style.display = 'flex';
-        fire.style.alignItems = 'center';
-        fire.style.justifyContent = 'center';
-        
         obstacle.style.width = `${width}px`;
         obstacle.style.height = `${height}px`;
         
         if (isGiantFire) {
             fire.classList.add('giant-fire');
-            
-            // Create spark container for giant fires
-            const sparkContainer = document.createElement('div');
-            sparkContainer.className = 'spark-container';
-            
-            // Add multiple sparks
-            for (let i = 0; i < 5; i++) {
-                const spark = document.createElement('div');
-                spark.className = 'spark';
-                // Randomize spark positions
-                spark.style.left = `${Math.random() * 100}%`;
-                spark.style.animationDelay = `${Math.random() * 2}s`;
-                sparkContainer.appendChild(spark);
-            }
-            
-            obstacle.appendChild(sparkContainer);
+            // Create enhanced spark effects for giant fires using our helper method
+            const sparkCount = Math.floor(this.getPerlinValue(5, 8));
+            this.createSparkEffects(obstacle, sparkCount);
         } else {
             // Add glow effect to regular fires
             fire.classList.add('glow-effect');
