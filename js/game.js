@@ -31,8 +31,6 @@ class Game {
         this.lastObstacleSize = null; // Tracks previous obstacle size for variety
         this.consecutiveIdenticalGaps = 0; // Prevents repetitive gap patterns
         this.missedLastJump = false; // Used for dynamic difficulty adjustment
-        this.perlinSeed = Math.random() * 10000; // Seed for natural-looking randomness
-        this.perlinIndex = 0; // Current position in Perlin noise sequence
         
         // Fire progression tracking
         this.smallFiresEncountered = 0;     // Count of small fires player has seen
@@ -97,7 +95,6 @@ class Game {
         this.lastObstacleSize = null;
         this.consecutiveIdenticalGaps = 0;
         this.missedLastJump = false;
-        this.perlinIndex = 0;
 
         // Reset fire progression tracking
         this.smallFiresEncountered = 0;
@@ -241,33 +238,9 @@ class Game {
         this.lastBirdSpawn = currentTime;
     }
 
-    // Enhanced Perlin noise implementation for natural randomness
-    perlinNoise(x) {
-        const x1 = Math.floor(x);
-        const x2 = x1 + 1;
-        const dx = x - x1;
-        
-        // Improved hash function for better distribution
-        const hash = (n) => {
-            n = ((n << 13) ^ n) & 0xFFFFFFFF;
-            n = (n * (n * n * 15731 + 789221) + 1376312589) & 0xFFFFFFFF;
-            return (n / 0x7fffffff);
-        };
-        
-        // Get pseudo-random gradients with improved distribution
-        const grad1 = hash(x1 * this.perlinSeed);
-        const grad2 = hash(x2 * this.perlinSeed);
-        
-        // Improved smoothstep interpolation for smoother transitions
-        const smooth = dx * dx * dx * (dx * (dx * 6 - 15) + 10);
-        return grad1 * (1 - smooth) + grad2 * smooth;
-    }
-    
-    // Get a value from Perlin noise between min and max with improved scaling
-    getPerlinValue(min, max) {
-        const noise = this.perlinNoise(this.perlinIndex / 10);
-        this.perlinIndex += 0.618033988749895; // Use golden ratio for better distribution
-        return min + (noise + 1) * 0.5 * (max - min);
+    // Get a random value between min and max
+    getRandomValue(min, max) {
+        return min + Math.random() * (max - min);
     }
     
     // Determine fire size category and dimensions
@@ -350,8 +323,8 @@ class Game {
         // Hard cap at 6 character widths
         maxSpacing = Math.min(maxSpacing, 6);
         
-        // Use Perlin noise for organic spacing
-        let spacing = this.getPerlinValue(minSpacing, maxSpacing);
+        // Use random value for spacing
+        let spacing = this.getRandomValue(minSpacing, maxSpacing);
         
         // Adaptive spacing algorithm
         if (this.consecutiveIdenticalGaps >= 2) {
@@ -396,15 +369,15 @@ class Game {
             spark.className = `spark${isWarning ? ' warning-spark' : ''}`;
             
             if (!isWarning) {
-                const sparkPosX = this.getPerlinValue(0, 100);
-                const sparkSize = this.getPerlinValue(4, 8);
-                const hue = this.getPerlinValue(20, 40);
+                const sparkPosX = this.getRandomValue(0, 100);
+                const sparkSize = this.getRandomValue(4, 8);
+                const hue = this.getRandomValue(20, 40);
                 
                 spark.style.left = `${sparkPosX}%`;
                 spark.style.width = `${sparkSize}px`;
                 spark.style.height = `${sparkSize}px`;
-                spark.style.animationDelay = `${this.getPerlinValue(0, 2)}s`;
-                spark.style.animationDuration = `${this.getPerlinValue(1.5, 2.5)}s`;
+                spark.style.animationDelay = `${this.getRandomValue(0, 2)}s`;
+                spark.style.animationDuration = `${this.getRandomValue(1.5, 2.5)}s`;
                 spark.style.backgroundColor = `hsl(${hue}, 100%, 60%)`;
             }
             
@@ -427,7 +400,7 @@ class Game {
             obstacle.className = 'obstacle';
             
             const fire = this.createFireElement('small', true);
-            const sizeVariation = this.getPerlinValue(0.8, 1.2);
+            const sizeVariation = this.getRandomValue(0.8, 1.2);
             const width = (25 + Math.random() * 10) * sizeVariation;
             const height = width * 2;
             const fontSize = width * 1.6;
@@ -444,8 +417,8 @@ class Game {
 
             obstacle.appendChild(fire);
 
-            const noiseOffset = this.getPerlinValue(-10, 10);
-            const posX = baseX + (i * 15) + noiseOffset;
+            const randomOffset = this.getRandomValue(-10, 10);
+            const posX = baseX + (i * 15) + randomOffset;
             obstacle.style.left = `${posX}%`;
 
             const obstacleObj = {
@@ -499,12 +472,12 @@ class Game {
         // Create fire emoji effect using our helper method
         const fire = this.createFireElement(fireSize);
         
-        // Set size based on fire size category with Perlin noise variation
+        // Set size based on fire size category with random variation
         let isGiantFire = false;
         let width, height, fontSize;
         
-        // Use Perlin noise to vary the size within each category
-        const sizeVariation = this.getPerlinValue(0.9, 1.1);
+        // Use random variation to adjust the size within each category
+        const sizeVariation = this.getRandomValue(0.9, 1.1);
         
         switch (fireSize) {
             case 'small':
@@ -532,7 +505,7 @@ class Game {
         if (isGiantFire) {
             fire.classList.add('giant-fire');
             // Create enhanced spark effects for giant fires using our helper method
-            const sparkCount = Math.floor(this.getPerlinValue(5, 8));
+            const sparkCount = Math.floor(this.getRandomValue(5, 8));
             this.createSparkEffects(obstacle, sparkCount);
         } else {
             // Add glow effect to regular fires
@@ -593,10 +566,7 @@ class Game {
         // Ensure spawn cooldown doesn't get too short at high speeds
         this.spawnCooldown = Math.max(this.spawnCooldown, 500);
         
-        // Log significant changes for debugging
-        if (Math.random() < 0.05) { // Only log occasionally to avoid console spam
-            console.log(`Current speed: ${this.speed.toFixed(2)}, Spacing multiplier: ${this.spacingMultiplier.toFixed(2)}`);
-        }
+        // Speed and spacing are now managed without debug logging
     }
 
     updateObstacles() {

@@ -33,7 +33,7 @@ Fire Jumpers is an engaging 2D runner game where you play as a firefighter navig
 
 - Built with vanilla JavaScript for optimal performance
 - Utilizes CSS animations for smooth visual effects
-- Implements Perlin noise for natural-feeling randomization
+- Implements smart randomization for natural-feeling gameplay
 - Responsive design that works on both desktop and mobile devices
 
 ## Game Mechanics
