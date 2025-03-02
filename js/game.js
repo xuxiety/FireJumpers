@@ -813,10 +813,24 @@ class Game {
                 const leftLeg = this.player.querySelector('.player-leg.left');
                 const rightLeg = this.player.querySelector('.player-leg.right');
                 
-                // Simple running animation
-                const time = Date.now() * 0.01;
-                leftLeg.style.transform = `rotate(${Math.sin(time) * 20}deg)`;
-                rightLeg.style.transform = `rotate(${Math.sin(time + Math.PI) * 20}deg)`;
+                // Enhanced running animation with natural movement
+                const time = Date.now() * 0.008; // Slowed down the animation speed
+                const stepAngle = 25; // Increased max rotation angle
+                
+                // Add forward tilt and smoother transitions
+                const rightAngle = Math.sin(time) * stepAngle - 5; // Slight forward tilt
+                const leftAngle = Math.sin(time + Math.PI) * stepAngle - 5;
+                
+                // Apply eased transitions for smoother movement
+                rightLeg.style.transform = `rotate(${rightAngle}deg)`;
+                leftLeg.style.transform = `rotate(${leftAngle}deg)`;
+                
+                // Add slight bounce effect to the player body
+                const bounceOffset = Math.abs(Math.sin(time * 2)) * 0.5;
+                this.player.style.transform = `translateY(-${bounceOffset}px)`;
+            } else {
+                // Reset transform when jumping
+                this.player.style.transform = 'none';
             }
             
             // Spawn and update obstacles

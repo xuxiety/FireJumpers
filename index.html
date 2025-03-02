@@ -77,7 +77,7 @@
             position: absolute;
             bottom: 0;
             width: 40px;
-            height: 60px;
+            height: 40px; /* Reduced from 60px to better match leg height */
             background-color: #FFFF00;
             border-radius: 10px 10px 0 0;
             left: 10px;
@@ -85,7 +85,7 @@
         
         .player-head {
             position: absolute;
-            bottom: 60px;
+            bottom: 40px; /* Adjusted to match new body height */
             width: 30px;
             height: 30px;
             background-color: #FAD6A5;
@@ -96,7 +96,7 @@
         /* Player hat with brim effect */
         .player-hat {
             position: absolute;
-            bottom: 85px;
+            bottom: 65px; /* Adjusted to match new head position */
             width: 40px;
             height: 15px;
             background-color: #FFFF00;
@@ -122,28 +122,30 @@
             width: 12px;
             height: 30px;
             background-color: #18A558;
+            transform-origin: top center;
+            transition: transform 0.05s ease-out;
         }
         
-        .player-leg.left { left: 10px; }
-        .player-leg.right { left: 28px; }
+        .player-leg.left { right: 28px; }
+        .player-leg.right { right: 10px; }
         
         /* Player arms with rotation */
         .player-arm {
             position: absolute;
-            bottom: 30px;
+            bottom: 5px;
             width: 10px;
-            height: 40px;
+            height: 30px;
             background-color: #FFFF00;
         }
         
         .player-arm.left {
             left: 0;
-            transform: rotate(20deg);
+            transform: rotate(15deg);
         }
         
         .player-arm.right {
             right: 0;
-            transform: rotate(-20deg);
+            transform: rotate(-15deg);
         }
         
         /* Obstacle styling for fire hazards */
