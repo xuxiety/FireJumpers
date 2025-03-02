@@ -498,6 +498,8 @@
             border: none;
             width: min(80vw, 400px);
             aspect-ratio: 1/1.2;
+            overflow-y: auto;
+            max-height: 80vh;
             position: relative;
             overflow: hidden;
             animation: menuFlicker 3s infinite alternate;
@@ -630,8 +632,60 @@
         <div id="game-over" class="menu" style="display: none;">
             <h1>You got roasted!</h1>
             <p>Final Score: <span id="final-score">0</span></p>
+            <div class="high-scores">
+                <h2>Top 10 Scores</h2>
+                <ul id="high-scores-list"></ul>
+            </div>
             <button id="retry-button">Retry</button>
         </div>
+        
+        <style>
+            .high-scores {
+                margin: 20px 0;
+                padding: 10px;
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 15px;
+            }
+            
+            .high-scores h2 {
+                font-size: 1.2rem;
+                margin-bottom: 10px;
+                color: #FFFF00;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            }
+            
+            #high-scores-list {
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+                text-align: left;
+                max-height: 150px;
+                overflow-y: auto;
+            }
+            
+            #high-scores-list li {
+                padding: 5px 10px;
+                margin: 5px 0;
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 5px;
+                font-weight: bold;
+                display: flex;
+                justify-content: space-between;
+            }
+            
+            #high-scores-list li:nth-child(1) {
+                background-color: rgba(255, 215, 0, 0.3);
+                color: #FFFF00;
+            }
+            
+            #high-scores-list li:nth-child(2) {
+                background-color: rgba(192, 192, 192, 0.3);
+            }
+            
+            #high-scores-list li:nth-child(3) {
+                background-color: rgba(205, 127, 50, 0.3);
+            }
+        </style>
     </div>
 
     <script src="js/game.js"></script>

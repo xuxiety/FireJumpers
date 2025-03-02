@@ -14,6 +14,7 @@ class Game {
         this.gravity = 0.4;     // Downward force applied during jumps
         this.consecutiveJumps = 0;
         this.maxJumps = 2;      // Double jump capability
+        this.highScores = this.loadHighScores();
 
         // Difficulty progression parameters
         this.lastSpeedIncrease = 0;
@@ -136,10 +137,36 @@ class Game {
         this.gameOverMenu.style.display = 'none';
     }
 
+    loadHighScores() {
+        const scores = localStorage.getItem('highScores');
+        return scores ? JSON.parse(scores) : [];
+    }
+
+    saveHighScore(score) {
+        this.highScores.push(score);
+        this.highScores.sort((a, b) => b - a);
+        if (this.highScores.length > 10) {
+            this.highScores = this.highScores.slice(0, 10);
+        }
+        localStorage.setItem('highScores', JSON.stringify(this.highScores));
+    }
+
+    updateHighScoresDisplay() {
+        const highScoresList = document.getElementById('high-scores-list');
+        highScoresList.innerHTML = '';
+        this.highScores.forEach((score, index) => {
+            const li = document.createElement('li');
+            li.textContent = `${index + 1}. ${score}`;
+            highScoresList.appendChild(li);
+        });
+    }
+
     gameOver() {
         this.isPlaying = false;
         this.isGameOver = true;
         this.finalScoreElement.textContent = this.score;
+        this.saveHighScore(this.score);
+        this.updateHighScoresDisplay();
         this.gameOverMenu.style.display = 'block';
         
         // Pause grass animations
@@ -789,6 +816,8 @@ class Game {
         this.isPlaying = false;
         this.isGameOver = true;
         this.finalScoreElement.textContent = this.score;
+        this.saveHighScore(this.score);
+        this.updateHighScoresDisplay();
         this.gameOverMenu.style.display = 'block';
     }
 
