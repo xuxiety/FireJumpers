@@ -77,10 +77,11 @@
             position: absolute;
             bottom: 0;
             width: 40px;
-            height: 40px; /* Reduced from 60px to better match leg height */
+            height: 40px;
             background-color: #FFFF00;
             border-radius: 10px 10px 0 0;
             left: 10px;
+            z-index: 2;
         }
         
         .player-head {
@@ -96,21 +97,21 @@
         /* Player hat with brim effect */
         .player-hat {
             position: absolute;
-            bottom: 65px; /* Adjusted to match new head position */
-            width: 40px;
-            height: 15px;
+            bottom: 60px;
+            width: 35px;
+            height: 12px;
             background-color: #FFFF00;
             border-radius: 5px 5px 0 0;
-            left: 10px;
+            left: 12.5px;
         }
         
         .player-hat:after {
             content: '';
             position: absolute;
-            bottom: -5px;
-            left: -5px;
-            width: 50px;
-            height: 5px;
+            bottom: -3px;
+            left: -3px;
+            width: 41px;
+            height: 4px;
             background-color: #FFFF00;
             border-radius: 2px;
         }
@@ -124,6 +125,7 @@
             background-color: #18A558;
             transform-origin: top center;
             transition: transform 0.05s ease-out;
+            z-index: 1;
         }
         
         .player-leg.left { right: 28px; }
@@ -146,6 +148,76 @@
         .player-arm.right {
             right: 0;
             transform: rotate(-15deg);
+        }
+        
+        /* Chainsaw styling */
+        .chainsaw {
+            position: absolute;
+            bottom: -5px;
+            right: -25px;
+            width: 40px;
+            height: 20px;
+            background: linear-gradient(90deg, #808080, #A8A8A8);
+            border-radius: 3px;
+            z-index: 4;
+        }
+        
+        .chainsaw::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 2px;
+            right: 2px;
+            height: 10px;
+            background: repeating-linear-gradient(90deg, 
+                #606060 0px, 
+                #606060 2px,
+                #808080 2px,
+                #808080 4px
+            );
+            border-radius: 1px;
+        }
+        
+        .chainsaw::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            right: 30px;
+            width: 8px;
+            height: 16px;
+            background-color: #404040;
+            border-radius: 2px;
+        }
+        
+        /* Firefighter tool belt */
+        .player-tool-belt {
+            position: absolute;
+            bottom: -5px;
+            left: 5px;
+            width: 50px;
+            height: 10px;
+            background-color: #8B4513;
+            border-radius: 5px;
+            z-index: 3;
+        }
+        
+        /* Tool pouches on the belt */
+        .player-tool-belt::before, .player-tool-belt::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 15px;
+            background-color: #A0522D;
+            border-radius: 3px;
+            bottom: -8px;
+        }
+        
+        .player-tool-belt::before {
+            left: 5px;
+        }
+        
+        .player-tool-belt::after {
+            right: 5px;
         }
         
         /* Obstacle styling for fire hazards */
@@ -253,7 +325,7 @@
             background-color: white;
             border-radius: 50%;
             opacity: 0.8;
-            z-index: 0;
+            z-index: 2;
             animation: cloud-bob-1 7000ms ease-in-out infinite;
         }
 
@@ -292,7 +364,7 @@
             color: #FFA500;
             text-shadow: 0 0 120px rgba(255, 140, 0, 0.95), 0 0 60px rgba(255, 69, 0, 0.9);
             filter: drop-shadow(0 0 50px rgba(255, 140, 0, 0.9));
-            z-index: 1;
+            z-index: -1;
             animation: sun-bob 3s ease-in-out infinite;
         }
 
@@ -542,10 +614,13 @@
             <div class="player-body"></div>
             <div class="player-head"></div>
             <div class="player-hat"></div>
+            <div class="player-tool-belt"></div>
             <div class="player-leg left"></div>
             <div class="player-leg right"></div>
             <div class="player-arm left"></div>
-            <div class="player-arm right"></div>
+            <div class="player-arm right">
+                <div class="chainsaw"></div>
+            </div>
         </div>
         <div id="score">Score: 0</div>
         <div id="start-menu" class="menu">
