@@ -393,8 +393,8 @@
             position: absolute;
             z-index: 3;
             pointer-events: none;
-            animation: move-environment 15s linear infinite;
-            animation-play-state: paused;
+            /* Removed CSS animation as we're handling movement in JavaScript */
+            transition: transform 0.3s ease;
         }
         
         .tree-trunk {
@@ -428,8 +428,8 @@
             z-index: 3;
             overflow: hidden;
             pointer-events: none;
-            animation: move-environment 12s linear infinite;
-            animation-play-state: paused;
+            /* Removed CSS animation as we're handling movement in JavaScript */
+            transition: transform 0.3s ease;
         }
         
         .grass-blade {
@@ -460,7 +460,7 @@
             transform: rotate(-3deg);
         }
         
-        /* Environment movement animation */
+        /* Environment movement animation - kept for reference but no longer used */
         @keyframes move-environment {
             0% { transform: translateX(0); }
             100% { transform: translateX(-100vw); }

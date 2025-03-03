@@ -54,6 +54,8 @@ class Game {
         this.obstacles = [];
         this.clouds = [];
         this.birds = [];
+        this.trees = [];
+        this.grasses = [];
 
         // UI elements
         this.gameContainer = document.getElementById('game-container');
@@ -103,17 +105,10 @@ class Game {
         document.documentElement.style.setProperty('--grass-move-duration', '8s');
         document.documentElement.style.setProperty('--grass-wave-duration', '2s');
 
-        // Start environmental animations
-        const trees = document.querySelectorAll('.tree');
-        const grasses = document.querySelectorAll('.tall-grass');
+        // Reset environmental elements
+        this.setupEnvironment();
         
-        trees.forEach(tree => {
-            tree.style.animationPlayState = 'running';
-        });
-        
-        grasses.forEach(grass => {
-            grass.style.animationPlayState = 'running';
-        });
+        // No need to set animation properties as we're handling movement in JavaScript
 
         // Reset fire progression tracking
         this.smallFiresEncountered = 0;
@@ -200,12 +195,23 @@ class Game {
     }
     
     setupEnvironment() {
-        // Add trees along the path
+        // Clear existing trees and grass
+        this.trees = [];
+        this.grasses = [];
+        
+        // Remove existing elements from DOM
+        const existingTrees = document.querySelectorAll('.tree');
+        const existingGrass = document.querySelectorAll('.tall-grass');
+        
+        existingTrees.forEach(tree => tree.remove());
+        existingGrass.forEach(grass => grass.remove());
+        
+        // Add trees along the path with better distribution
         for (let i = 0; i < 8; i++) {
             this.createTree(i * 15 + Math.random() * 10);
         }
         
-        // Add tall grass patches
+        // Add tall grass patches with better distribution
         for (let i = 0; i < 20; i++) {
             this.createGrass(i * 5 + Math.random() * 5);
         }
@@ -233,6 +239,14 @@ class Game {
         const scale = 0.7 + Math.random() * 0.6;
         tree.style.transform = `scale(${scale})`;
         
+        // Store tree data for tracking
+        const treeObj = {
+            element: tree,
+            posX: posX,
+            scale: scale
+        };
+        
+        this.trees.push(treeObj);
         this.gameContainer.appendChild(tree);
     }
     
@@ -250,6 +264,13 @@ class Game {
         // Position the grass
         grass.style.left = `${posX}%`;
         
+        // Store grass data for tracking
+        const grassObj = {
+            element: grass,
+            posX: posX
+        };
+        
+        this.grasses.push(grassObj);
         this.gameContainer.appendChild(grass);
     }
 
@@ -881,6 +902,39 @@ class Game {
                     cloud.element.style.top = `${Math.random() * 40 + 10}%`;
                 }
                 cloud.element.style.left = `${cloud.posX}%`;
+            });
+            
+            // Animate trees - manually update position instead of relying only on CSS animation
+            this.trees.forEach((tree, index) => {
+                // Calculate new position based on game speed
+                tree.posX -= this.speed * 0.05;
+                
+                // If tree moves off-screen, recycle it to the right side
+                if (tree.posX < -15) {
+                    tree.posX = 105 + Math.random() * 10;
+                    tree.element.style.bottom = `${25 + Math.random() * 5}%`;
+                    
+                    // Vary the scale for visual diversity
+                    tree.scale = 0.7 + Math.random() * 0.6;
+                    tree.element.style.transform = `scale(${tree.scale})`;
+                }
+                
+                // Update tree position
+                tree.element.style.left = `${tree.posX}%`;
+            });
+            
+            // Animate grass patches
+            this.grasses.forEach((grass, index) => {
+                // Calculate new position based on game speed
+                grass.posX -= this.speed * 0.06;
+                
+                // If grass moves off-screen, recycle it to the right side
+                if (grass.posX < -5) {
+                    grass.posX = 105 + Math.random() * 5;
+                }
+                
+                // Update grass position
+                grass.element.style.left = `${grass.posX}%`;
             });
             
             // Spawn and animate birds
