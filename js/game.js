@@ -15,6 +15,7 @@ class Game {
         this.consecutiveJumps = 0;
         this.maxJumps = 2;      // Double jump capability
         this.highScores = this.loadHighScores();
+        this.hasShownExtraLargeWarning = false;  // Track if we've shown the warning for extra-large fire
 
         // Difficulty progression parameters
         this.lastSpeedIncrease = 0;
@@ -99,6 +100,7 @@ class Game {
         this.lastObstacleSize = null;
         this.consecutiveIdenticalGaps = 0;
         this.missedLastJump = false;
+        this.hasShownExtraLargeWarning = false; // Reset warning flag for new game
         
         // Start grass animations
         document.documentElement.style.setProperty('--grass-animation-state', 'running');
@@ -532,6 +534,30 @@ class Game {
     spawnExtraLargeFire() {
         const currentTime = Date.now();
         this.lastObstacleSpawn = currentTime;
+
+        // Show warning animation for first extra-large fire
+        if (!this.hasShownExtraLargeWarning) {
+            this.hasShownExtraLargeWarning = true;
+            const sun = document.querySelector('.sun');
+            if (sun) {
+                // Add warning ray effect
+                sun.style.position = 'relative';
+                const rayEffect = document.createElement('div');
+                rayEffect.className = 'sun-ray-warning';
+                sun.appendChild(rayEffect);
+
+                // Create screen flash effect
+                const screenFlash = document.createElement('div');
+                screenFlash.className = 'screen-flash';
+                this.gameContainer.appendChild(screenFlash);
+
+                // Remove the effects after animation
+                setTimeout(() => {
+                    rayEffect.remove();
+                    screenFlash.remove();
+                }, 3000);
+            }
+        }
         
         // Create a container for the extra-large fire bundle
         const container = document.createElement('div');
